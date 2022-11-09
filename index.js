@@ -19,6 +19,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run(){
     try{
         const userCollection  = client.db("gemVast").collection('services');
+        const reviewCollection  = client.db("gemVast").collection('review');
 
         app.get('/service',async(req,res)=>{
             const query ={};
@@ -37,11 +38,19 @@ async function run(){
         app.get('/services/:id',async(req,res)=>{
 
             const ID= req.params.id;
-            console.log(ID)
+          //  console.log(ID)
              const query ={_id:ObjectId(ID)}
-             console.log(query)
+            // console.log(query)
              const service  = await userCollection.findOne(query)          
              res.send(service)
+        })
+
+        ///post
+        app.post('/services',async(req,res)=>{
+            const review = req.body;
+            //console.log(review)
+            const result = await reviewCollection.insertOne(review);
+           res.send(result)
         })
 
     }
