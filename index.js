@@ -1,6 +1,7 @@
 const express = require('express');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
+require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -10,10 +11,11 @@ app.use(express.json());
 //pass GAvUcicPpNfcq8lQ
 // user gemvast
 
+// process.env.DB_USER=gemvast
+// process.env.DB_PASS=GAvUcicPpNfcq8lQ
 
 
-
-const uri = "mongodb+srv://gemvast:GAvUcicPpNfcq8lQ@cluster0.lopokh6.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lopokh6.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
@@ -57,6 +59,13 @@ async function run() {
             const cursor = await reviewCollection.find(query);
             const review = await cursor.toArray();
             res.send(review);
+        })
+        app.delete('/myreviews/:id',async(req,res)=>{
+            const Id =req.params.id;
+            const query = {_id:ObjectId(Id)}
+            const result = await reviewCollection.deleteOne(query);
+            console.log(result);
+            res.send(result);
         })
 
 
