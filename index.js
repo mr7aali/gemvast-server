@@ -8,11 +8,7 @@ const port = process.env.PORT || 5000;
 //middleware
 app.use(cors());
 app.use(express.json());
-//pass GAvUcicPpNfcq8lQ
-// user gemvast
 
-// process.env.DB_USER=gemvast
-// process.env.DB_PASS=GAvUcicPpNfcq8lQ
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lopokh6.mongodb.net/?retryWrites=true&w=majority`;
@@ -20,28 +16,30 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
-        const userCollection = client.db("gemVast").collection('services');
+        const serviceCollection = client.db("gemVast").collection('services');
         const reviewCollection = client.db("gemVast").collection('review');
 
         app.get('/service', async (req, res) => {
             const query = {};
-            const cursor = userCollection.find(query);
+            const cursor = serviceCollection.find(query);
             const services = await cursor.limit(3).toArray();
             res.send(services);
 
         })
         app.get('/allservice', async (req, res) => {
             const query = {};
-            const cursor = userCollection.find(query);
+            const cursor = serviceCollection.find(query);
             const services = await cursor.toArray();
             res.send(services);
         })
+
+        
         // services/
         app.get('/services/:id', async (req, res) => {
 
             const ID = req.params.id;
             const query = { _id: ObjectId(ID) }
-            const service = await userCollection.findOne(query)
+            const service = await serviceCollection.findOne(query)
             res.send(service)
         })
 
@@ -49,6 +47,11 @@ async function run() {
         app.post('/services', async (req, res) => {
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
+            res.send(result)
+        }) 
+        app.post('/addservices', async (req, res) => {
+            const review = req.body;
+            const result = await serviceCollection.insertOne(review);
             res.send(result)
         }) 
 
@@ -60,12 +63,34 @@ async function run() {
             const review = await cursor.toArray();
             res.send(review);
         })
+
         app.delete('/myreviews/:id',async(req,res)=>{
             const Id =req.params.id;
             const query = {_id:ObjectId(Id)}
             const result = await reviewCollection.deleteOne(query);
             console.log(result);
             res.send(result);
+        })
+
+        app.get('/myreviews/edit/:id',async(req,res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const review = await reviewCollection.findOne(query);
+            res.send(review)
+
+        })
+        app.put('/myreviews/edit/:id', async(req,res)=>{
+            const id = req.params.id;
+            const filter ={_id: ObjectId(id)};
+            const Review = req.body;
+            const option ={upsert: true};
+            const upReview ={
+                $set:{
+                    Review: Review.review
+                }
+            }
+            const result  = await reviewCollection.updateOne(filter,upReview,option);
+            res.send(result)
         })
 
 
